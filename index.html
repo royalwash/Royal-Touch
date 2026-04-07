@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Royal Touch Mobile Wash</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --primary:#0a1f3d;
+  --accent:#00d4ff;
+  --gold:#ffd700;
+}
+
+body {
+  margin:0;
+  font-family:'Inter',sans-serif;
+  background:#0a1f3d;
+  color:#fff;
+}
+
+.nav { display:flex; justify-content:space-between; align-items:center; padding:20px 40px; }
+.logo { font-family:'Playfair Display'; font-size:28px; }
+.nav a { color:#fff; text-decoration:none; margin-left:20px; opacity:0.8; }
+.nav a:hover {opacity:1}
+.hero { height:90vh; background:linear-gradient(rgba(10,31,61,0.75),rgba(10,31,61,0.75)), url('https://i.imgur.com/1HUVBnE.jpg') center/cover; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:20px; }
+.hero h1 { font-size:3.5rem; margin-bottom:10px; }
+.hero p { font-size:1.4rem; opacity:0.9; }
+.buttons { margin-top:30px; }
+.btn { padding:14px 30px; border-radius:40px; margin:10px; font-size:1.1rem; text-decoration:none; font-weight:600; }
+.call {background:var(--accent); color:#000;}
+.text {background:#fff; color:#000;}
+.services { padding:60px 20px; text-align:center; }
+.cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:20px; margin-top:40px; }
+.card { background:#122a52; padding:25px; border-radius:20px; box-shadow:0 10px 25px rgba(0,0,0,0.4); }
+.card h3 {margin-bottom:10px}
+.booking { background:#fff; color:#000; padding:60px 20px; text-align:center; }
+.form { max-width:600px; margin:auto; }
+.input { width:100%; padding:14px; margin:10px 0; border-radius:10px; border:2px solid #ddd; font-size:1rem; }
+.timeSlots { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; }
+.slot { padding:10px 18px; border-radius:10px; border:2px solid var(--accent); cursor:pointer; }
+.slot:hover {background:var(--accent); color:#fff}
+.taken {background:#ccc; cursor:not-allowed}
+.selected {border-color:var(--gold); background:var(--gold); color:#000}
+.confirm { margin-top:20px; padding:16px 40px; border:none; background:var(--accent); border-radius:40px; font-size:1.2rem; cursor:pointer; }
+footer { padding:30px; text-align:center; }
+</style>
+</head>
+<body>
+<div class="nav">
+  <div class="logo">Royal Touch </div>
+  <div>
+    <a href="#">Home</a>
+    <a href="#booking">Book</a>
+  </div>
+</div>
+<section class="hero">
+  <h1>Premium Mobile Car Wash</h1>
+  <p>We Come To Your Driveway • Los Angeles</p>
+  <p><strong>(818) 818-2082</strong></p>
+  <div class="buttons">
+    <a href="tel:8188182082" class="btn call">Call Now</a>
+    <a href="sms:8188182082" class="btn text">Text Us</a>
+  </div>
+</section>
+<section class="services">
+  <h2>Our Services</h2>
+  <div class="cards">
+    <div class="card"><h3>Basic Wash</h3><p>Exterior clean + shine</p></div>
+    <div class="card"><h3>Premium Detail</h3><p>Interior + exterior full detail</p></div>
+    <div class="card"><h3>Luxury Package</h3><p>Showroom-level cleaning</p></div>
+  </div>
+</section>
+<section class="booking" id="booking">
+  <h2>Book Your Wash</h2>
+  <div class="form">
+    <input type="date" id="date" class="input" onchange="loadSlots()">
+    <div class="timeSlots" id="slots"></div>
+    <input type="text" id="name" placeholder="Your Name" class="input">
+    <input type="text" id="address" placeholder="Your Address" class="input">
+    <button class="confirm" onclick="book()">Confirm Booking</button>
+  </div>
+</section>
+<footer>
+  <p>Royal Touch Mobile Wash</p>
+  <p>(818) 818-2082</p>
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+<script>
+emailjs.init("esP8QFlCa75gpp5qRO5ic");
+let bookedSlots = JSON.parse(localStorage.getItem('bookedSlots') || '{}');
+let selected = null;
+function loadSlots(){
+  const date = document.getElementById('date').value;
+  const container = document.getElementById('slots');
+  container.innerHTML='';
+  if(!date) return;
+  const booked = bookedSlots[date] || [];
+  for(let h=8;h<=21;h++){
+    let time = h+':00';
+    let div=document.createElement('div');
+    if(booked.includes(time)){
+      div.className='slot taken';
+      div.innerText=time;
+    } else {
+      div.className='slot';
+      div.innerText=time;
+      div.onclick=()=>{
+        document.querySelectorAll('.slot').forEach(s=>s.classList.remove('selected'));
+        div.classList.add('selected');
+        selected=time;
+      }
+    }
+    container.appendChild(div);
+  }
+}
+function book(){
+  let name=document.getElementById('name').value;
+  let address=document.getElementById('address').value;
+  let date=document.getElementById('date').value;
+  if(!name||!address||!date||!selected){ alert('Fill all fields'); return; }
+  if(!bookedSlots[date]) bookedSlots[date]=[];
+  bookedSlots[date].push(selected);
+  localStorage.setItem('bookedSlots', JSON.stringify(bookedSlots));
+  emailjs.send("service_jecfigu","template_n3vfe6p",{
+    name:name,
+    address:address,
+    date:date,
+    time:selected,
+    to_email:"nohocarwashh@gmail.com"
+  }).then(()=>{
+    alert('✅ Booking confirmed!');
+    selected=null;
+    document.getElementById('name').value='';
+    document.getElementById('address').value='';
+    loadSlots();
+  },()=>{ alert('Booked, but email failed'); });
+}
+</script>
+</body>
+</html>
