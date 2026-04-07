@@ -29,21 +29,22 @@ body { margin:0; font-family:'Inter',sans-serif; background:#0a1f3d; color:#fff;
 .card h3 {margin-bottom:10px}
 .booking { background:#fff; color:#000; padding:60px 20px; text-align:center; }
 .form { max-width:600px; margin:auto; }
-.input { width:100%; padding:14px; margin:10px 0; border-radius:10px; border:2px solid #ddd; font-size:1rem; }
+.input, select { width:100%; padding:14px; margin:10px 0; border-radius:10px; border:2px solid #ddd; font-size:1rem; }
 .timeSlots { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; }
 .slot { padding:10px 18px; border-radius:10px; border:2px solid var(--accent); cursor:pointer; }
 .slot:hover {background:var(--accent); color:#fff}
 .taken {background:#ccc; cursor:not-allowed}
 .selected {border-color:var(--gold); background:var(--gold); color:#000}
-.confirm { margin-top:20px; padding:16px 40px; border:none; background:var(--accent); border-radius:40px; font-size:1.2rem; cursor:pointer; }
+.confirm { margin-top:20px; padding:16px 40px; border:none; background:var(--accent); border-radius:40px; font-size:1.2rem; cursor:pointer; color:#000; }
 footer { padding:30px; text-align:center; }
 </style>
 </head>
 <body>
 <div class="nav">
-  <div class="logo">Royal Touch </div>
+  <div class="logo">Royal Touch 👑</div>
   <div><a href="#">Home</a><a href="#booking">Book</a></div>
 </div>
+
 <section class="hero">
   <h1>Premium Mobile Car Wash</h1>
   <p>We Come To Your Driveway • Los Angeles</p>
@@ -53,6 +54,7 @@ footer { padding:30px; text-align:center; }
     <a href="sms:8188182082" class="btn text">Text Us</a>
   </div>
 </section>
+
 <section class="services">
   <h2>Our Services</h2>
   <div class="cards">
@@ -61,45 +63,46 @@ footer { padding:30px; text-align:center; }
     <div class="card"><h3>Luxury Package</h3><p>Showroom-level cleaning</p></div>
   </div>
 </section>
+
 <section class="booking" id="booking">
   <h2>Book Your Wash</h2>
   <div class="form">
-    <input type="date" id="date" class="input" onchange="loadSlots()">
+    <input type="text" name="name" id="name" placeholder="Your Name" class="input" required>
+    <input type="text" name="address" id="address" placeholder="Your Address" class="input" required>
+    <input type="date" name="date" id="date" class="input" required>
     <div class="timeSlots" id="slots"></div>
-    <input type="text" id="name" placeholder="Your Name" class="input">
-    <input type="text" id="address" placeholder="Your Address" class="input">
-    <button class="confirm" onclick="book()">Confirm Booking</button>
+    <button class="confirm" onclick="submitForm()">Confirm Booking</button>
   </div>
 </section>
+
 <footer>
   <p>Royal Touch Mobile Wash</p>
   <p>(818) 818-2082</p>
 </footer>
 
-<!-- EmailJS Script -->
-<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
 <script>
-emailjs.init("MwsW5aVssNr7zBQlo"); // правильный Public Key
 let bookedSlots = JSON.parse(localStorage.getItem('bookedSlots') || '{}');
 let selected = null;
 
-function loadSlots() {
+// Загружаем слоты по дате
+function loadSlots(){
   const date = document.getElementById('date').value;
   const container = document.getElementById('slots');
   container.innerHTML = '';
-  selected = null; 
-  if (!date) return;
+  selected = null;
+  if(!date) return;
+
   const booked = bookedSlots[date] || [];
-  for (let h = 8; h <= 21; h++) {
+  for(let h=8; h<=21; h++){
     let time = h + ':00';
     let div = document.createElement('div');
-    if (booked.includes(time)) {
+    if(booked.includes(time)){
       div.className = 'slot taken';
       div.innerText = time;
     } else {
       div.className = 'slot';
       div.innerText = time;
-      div.onclick = () => {
+      div.onclick = ()=> {
         document.querySelectorAll('.slot').forEach(s => s.classList.remove('selected'));
         div.classList.add('selected');
         selected = time;
@@ -109,37 +112,52 @@ function loadSlots() {
   }
 }
 
-function book() {
+document.getElementById('date').addEventListener('change', loadSlots);
+
+// Отправка формы через Formspree
+function submitForm(){
   const name = document.getElementById('name').value.trim();
   const address = document.getElementById('address').value.trim();
   const date = document.getElementById('date').value;
 
-  if (!name || !address || !date || !selected) {
+  if(!name || !address || !date || !selected){
     alert('⚠️ Please fill all fields and select a time slot.');
     return;
   }
 
-  if (!bookedSlots[date]) bookedSlots[date] = [];
+  // Сохраняем забронированный слот
+  if(!bookedSlots[date]) bookedSlots[date] = [];
   bookedSlots[date].push(selected);
   localStorage.setItem('bookedSlots', JSON.stringify(bookedSlots));
 
-  const templateParams = { name, address, date, time: selected };
+  // Создаём и отправляем форму
+  const form = document.createElement('form');
+  form.action = "https://formspree.io/f/xjgplyyl"; // твой endpoint
+  form.method = "POST";
+  form.style.display = "none";
 
-  emailjs.send('service_jecfigu', 'template_n3vfe6p', templateParams)
-    .then(response => {
-      alert('✅ Booking confirmed and email sent!');
-      resetForm();
-      loadSlots();
-    })
-    .catch(error => {
-      console.error('EmailJS Error:', error);
-      alert('✅ Booking confirmed locally, but email failed. Check console for details.');
-      resetForm();
-      loadSlots();
-    });
-}
+  const fields = {
+    name: name,
+    address: address,
+    date: date,
+    time: selected
+  };
 
-function resetForm() {
+  for(const key in fields){
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = key;
+    input.value = fields[key];
+    form.appendChild(input);
+  }
+
+  document.body.appendChild(form);
+  form.submit();
+
+  alert('✅ Booking confirmed! Check your email.');
+  form.remove();
+
+  // Сброс формы
   document.getElementById('name').value = '';
   document.getElementById('address').value = '';
   document.getElementById('date').value = '';
