@@ -13,14 +13,7 @@
   --accent:#00d4ff;
   --gold:#ffd700;
 }
-
-body {
-  margin:0;
-  font-family:'Inter',sans-serif;
-  background:#0a1f3d;
-  color:#fff;
-}
-
+body { margin:0; font-family:'Inter',sans-serif; background:#0a1f3d; color:#fff; }
 .nav { display:flex; justify-content:space-between; align-items:center; padding:20px 40px; }
 .logo { font-family:'Playfair Display'; font-size:28px; }
 .nav a { color:#fff; text-decoration:none; margin-left:20px; opacity:0.8; }
@@ -50,11 +43,8 @@ footer { padding:30px; text-align:center; }
 </head>
 <body>
 <div class="nav">
-  <div class="logo">Royal Touch </div>
-  <div>
-    <a href="#">Home</a>
-    <a href="#booking">Book</a>
-  </div>
+  <div class="logo">Royal Touch 👑</div>
+  <div><a href="#">Home</a><a href="#booking">Book</a></div>
 </div>
 <section class="hero">
   <h1>Premium Mobile Car Wash</h1>
@@ -92,6 +82,7 @@ footer { padding:30px; text-align:center; }
 emailjs.init("esP8QFlCa75gpp5qRO5ic");
 let bookedSlots = JSON.parse(localStorage.getItem('bookedSlots') || '{}');
 let selected = null;
+
 function loadSlots(){
   const date = document.getElementById('date').value;
   const container = document.getElementById('slots');
@@ -100,8 +91,8 @@ function loadSlots(){
   const booked = bookedSlots[date] || [];
   for(let h=8;h<=21;h++){
     let time = h+':00';
-    let div=document.createElement('div');
-    if(booked.includes(time)){
+    let div = document.createElement('div');
+    if(booked.includes(time)) {
       div.className='slot taken';
       div.innerText=time;
     } else {
@@ -116,27 +107,37 @@ function loadSlots(){
     container.appendChild(div);
   }
 }
+
 function book(){
-  let name=document.getElementById('name').value;
-  let address=document.getElementById('address').value;
-  let date=document.getElementById('date').value;
+  const name=document.getElementById('name').value;
+  const address=document.getElementById('address').value;
+  const date=document.getElementById('date').value;
   if(!name||!address||!date||!selected){ alert('Fill all fields'); return; }
+
+  // Save slot
   if(!bookedSlots[date]) bookedSlots[date]=[];
   bookedSlots[date].push(selected);
   localStorage.setItem('bookedSlots', JSON.stringify(bookedSlots));
-  emailjs.send("service_jecfigu","template_n3vfe6p",{
-    name:name,
-    address:address,
-    date:date,
-    time:selected,
-    to_email:"nohocarwashh@gmail.com"
-  }).then(()=>{
-    alert('✅ Booking confirmed!');
-    selected=null;
-    document.getElementById('name').value='';
-    document.getElementById('address').value='';
-    loadSlots();
-  },()=>{ alert('Booked, but email failed'); });
+
+  // Prepare EmailJS
+  const templateParams = {
+    name: name,
+    address: address,
+    date: date,
+    time: selected
+  };
+
+  emailjs.send('service_jecfigu', 'template_n3vfe6p', templateParams)
+    .then(response => {
+      alert('✅ Booking confirmed and email sent!');
+      selected=null;
+      document.getElementById('name').value='';
+      document.getElementById('address').value='';
+      loadSlots();
+    }, error => {
+      alert('✅ Booking confirmed locally, but email failed. Check your EmailJS settings.');
+      loadSlots();
+    });
 }
 </script>
 </body>
