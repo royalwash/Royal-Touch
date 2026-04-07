@@ -113,6 +113,14 @@ body {
   font-size:1rem;
   box-sizing:border-box;
 }
+.dateLabel {
+  display:block;
+  font-weight:500;
+  margin-top:10px;
+  margin-bottom:5px;
+  color:#000;
+  font-size:0.95rem;
+}
 .timeSlots {
   display:flex;
   flex-wrap:wrap;
@@ -161,7 +169,7 @@ footer {
 <body>
 
 <div class="nav">
-  <div class="logo">Royal Touch </div>
+  <div class="logo">Royal Touch 👑</div>
   <div>
     <a href="#">Home</a>
     <a href="#booking">Book</a>
@@ -192,7 +200,11 @@ footer {
   <div class="form">
     <input type="text" name="name" id="name" placeholder="Your Name" class="input" required>
     <input type="text" name="address" id="address" placeholder="Your Address" class="input" required>
+
+    <!-- Label и поле даты -->
+    <label for="date" class="dateLabel">Select Date and Time</label>
     <input type="date" name="date" id="date" class="input" required>
+
     <div class="timeSlots" id="slots"></div>
     <button class="confirm" onclick="submitForm()">Confirm Booking</button>
   </div>
@@ -277,5 +289,6 @@ function submitForm(){
   document.getElementById('slots').innerHTML = '';
 }
 </script>
+
 </body>
 </html>
