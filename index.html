@@ -169,7 +169,7 @@ footer {
 <body>
 
 <div class="nav">
-  <div class="logo">Royal Touch </div>
+  <div class="logo">Royal Touch 👑</div>
   <div>
     <a href="#">Home</a>
     <a href="#booking">Book</a>
@@ -199,6 +199,7 @@ footer {
   <h2>Book Your Wash</h2>
   <div class="form">
     <input type="text" name="name" id="name" placeholder="Your Name" class="input" required>
+    <input type="tel" name="phone" id="phone" placeholder="Your Phone Number" class="input" required>
     <input type="text" name="address" id="address" placeholder="Your Address" class="input" required>
 
     <!-- Label и поле даты -->
@@ -250,10 +251,11 @@ document.getElementById('date').addEventListener('change', loadSlots);
 
 function submitForm(){
   const name = document.getElementById('name').value.trim();
+  const phone = document.getElementById('phone').value.trim();
   const address = document.getElementById('address').value.trim();
   const date = document.getElementById('date').value;
 
-  if(!name || !address || !date || !selected){
+  if(!name || !phone || !address || !date || !selected){
     alert('⚠️ Please fill all fields and select a time slot.');
     return;
   }
@@ -267,7 +269,7 @@ function submitForm(){
   form.method = "POST";
   form.style.display = "none";
 
-  const fields = { name, address, date, time: selected };
+  const fields = { name, phone, address, date, time: selected };
   for(const key in fields){
     const input = document.createElement('input');
     input.type = 'hidden';
@@ -283,6 +285,7 @@ function submitForm(){
 
   form.remove();
   document.getElementById('name').value = '';
+  document.getElementById('phone').value = '';
   document.getElementById('address').value = '';
   document.getElementById('date').value = '';
   selected = null;
