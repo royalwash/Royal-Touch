@@ -4,9 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Royal Touch Mobile Wash</title>
-
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-
 <style>
 :root {
   --primary:#0a1f3d;
@@ -77,67 +75,76 @@ footer { padding:30px; text-align:center; }
   <p>Royal Touch Mobile Wash</p>
   <p>(818) 818-2082</p>
 </footer>
+
+<!-- EmailJS Script -->
 <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
 <script>
-emailjs.init("esP8QFlCa75gpp5qRO5ic");
+emailjs.init("MwsW5aVssNr7zBQlo"); // правильный Public Key
 let bookedSlots = JSON.parse(localStorage.getItem('bookedSlots') || '{}');
 let selected = null;
 
-function loadSlots(){
+function loadSlots() {
   const date = document.getElementById('date').value;
   const container = document.getElementById('slots');
-  container.innerHTML='';
-  if(!date) return;
+  container.innerHTML = '';
+  selected = null; 
+  if (!date) return;
   const booked = bookedSlots[date] || [];
-  for(let h=8;h<=21;h++){
-    let time = h+':00';
+  for (let h = 8; h <= 21; h++) {
+    let time = h + ':00';
     let div = document.createElement('div');
-    if(booked.includes(time)) {
-      div.className='slot taken';
-      div.innerText=time;
+    if (booked.includes(time)) {
+      div.className = 'slot taken';
+      div.innerText = time;
     } else {
-      div.className='slot';
-      div.innerText=time;
-      div.onclick=()=>{
-        document.querySelectorAll('.slot').forEach(s=>s.classList.remove('selected'));
+      div.className = 'slot';
+      div.innerText = time;
+      div.onclick = () => {
+        document.querySelectorAll('.slot').forEach(s => s.classList.remove('selected'));
         div.classList.add('selected');
-        selected=time;
+        selected = time;
       }
     }
     container.appendChild(div);
   }
 }
 
-function book(){
-  const name=document.getElementById('name').value;
-  const address=document.getElementById('address').value;
-  const date=document.getElementById('date').value;
-  if(!name||!address||!date||!selected){ alert('Fill all fields'); return; }
+function book() {
+  const name = document.getElementById('name').value.trim();
+  const address = document.getElementById('address').value.trim();
+  const date = document.getElementById('date').value;
 
-  // Save slot
-  if(!bookedSlots[date]) bookedSlots[date]=[];
+  if (!name || !address || !date || !selected) {
+    alert('⚠️ Please fill all fields and select a time slot.');
+    return;
+  }
+
+  if (!bookedSlots[date]) bookedSlots[date] = [];
   bookedSlots[date].push(selected);
   localStorage.setItem('bookedSlots', JSON.stringify(bookedSlots));
 
-  // Prepare EmailJS
-  const templateParams = {
-    name: name,
-    address: address,
-    date: date,
-    time: selected
-  };
+  const templateParams = { name, address, date, time: selected };
 
   emailjs.send('service_jecfigu', 'template_n3vfe6p', templateParams)
     .then(response => {
       alert('✅ Booking confirmed and email sent!');
-      selected=null;
-      document.getElementById('name').value='';
-      document.getElementById('address').value='';
+      resetForm();
       loadSlots();
-    }, error => {
-      alert('✅ Booking confirmed locally, but email failed. Check your EmailJS settings.');
+    })
+    .catch(error => {
+      console.error('EmailJS Error:', error);
+      alert('✅ Booking confirmed locally, but email failed. Check console for details.');
+      resetForm();
       loadSlots();
     });
+}
+
+function resetForm() {
+  document.getElementById('name').value = '';
+  document.getElementById('address').value = '';
+  document.getElementById('date').value = '';
+  selected = null;
+  document.getElementById('slots').innerHTML = '';
 }
 </script>
 </body>
